@@ -102,6 +102,24 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // --- Lógica de la App ---
 
+    function updateAxisLimits() {
+        for (const axis in axisInputs) {
+            const input = axisInputs[axis];
+            const label = document.querySelector(`label[for='${input.id}']`);
+            const totalInBank = allQuestions.filter(q => q.axis === axis).length;
+            const available = allQuestions.filter(q => q.axis === axis && !recentlyUsedIds.includes(q.id)).length;
+            
+            const originalLabel = label.innerText.split('(')[0].trim();
+            label.innerText = `${originalLabel} (disponibles: ${available} de ${totalInBank})`;
+            input.max = available;
+            
+            if (parseInt(input.value) > available) {
+                input.value = available;
+            }
+        }
+        updateTotalCounter();
+    }
+
     function initializeApp() {
         Object.values(axisInputs).forEach(input => input.addEventListener('input', updateTotalCounter));
         totalQuestionsInput.addEventListener('input', updateTotalCounter);
@@ -109,6 +127,7 @@ document.addEventListener('DOMContentLoaded', () => {
         playAgainButton.addEventListener('click', () => {
             scoreScreen.style.display = 'none';
             startScreen.style.display = 'block';
+            updateAxisLimits();
         });
 
         nextButton.addEventListener('click', showNextQuestion);
@@ -117,7 +136,7 @@ document.addEventListener('DOMContentLoaded', () => {
             feedbackButton.style.display = 'none';
         });
 
-        updateTotalCounter();
+        updateAxisLimits();
     }
 
     function updateTotalCounter() {
@@ -157,7 +176,11 @@ document.addEventListener('DOMContentLoaded', () => {
             const availableQuestions = allQuestions.filter(q => q.axis === axis && !excludedIds.includes(q.id));
 
             if (availableQuestions.length < count) {
-                alert(`Error: No hay suficientes preguntas NUEVAS en el eje "${axis}".\nDisponibles: ${availableQuestions.length}\nSolicitadas: ${count}\n\nIntenta con una selección diferente o refresca la página para reiniciar el historial.`);
+                alert(`Error: No hay suficientes preguntas NUEVAS en el eje \"${axis}\".
+Disponibles: ${availableQuestions.length}
+Solicitadas: ${count}
+
+Intenta con una selección diferente o refresca la página para reiniciar el historial.`);
                 return null;
             }
             const shuffled = availableQuestions.sort(() => 0.5 - Math.random());
@@ -180,7 +203,8 @@ document.addEventListener('DOMContentLoaded', () => {
         questionCounter.innerText = `Pregunta ${currentQuestionIndex + 1} de ${questions.length}`;
         feedbackText.innerText = question.feedback;
         answersContainer.innerHTML = '';
-        question.answers.forEach(answer => {
+        const shuffledAnswers = question.answers.sort(() => 0.5 - Math.random());
+        shuffledAnswers.forEach(answer => {
             const button = document.createElement('button');
             button.innerText = answer.text;
             button.classList.add('answer-btn');
@@ -235,7 +259,9 @@ document.addEventListener('DOMContentLoaded', () => {
         quizScreen.style.display = 'none';
         scoreScreen.style.display = 'block';
         finalScore.innerText = `${score} / ${questions.length}`;
-        recentlyUsedIds = questions.map(q => q.id);
+        const newIds = questions.map(q => q.id);
+        recentlyUsedIds.push(...newIds);
+        recentlyUsedIds = [...new Set(recentlyUsedIds)];
     }
 
     initializeApp();
