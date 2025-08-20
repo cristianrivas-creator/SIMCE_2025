@@ -19,6 +19,7 @@ body {
     height: 100vh;
     margin: 0;
     color: var(--text-light);
+    font-size: 18px;
 }
 
 .container {
@@ -38,7 +39,7 @@ body {
 
 button {
     background-color: var(--accent-primary);
-    color: var(--text-light);
+    color: var(--bg-dark);
     border: 1px solid var(--accent-primary);
     border-radius: 8px;
     padding: 12px 25px;
